@@ -22,15 +22,13 @@ try:
             print("Unable to recieve the frame")
             break
 
-        results = model(frame, verbose=False) 
+        results = model.track(frame, verbose=False) 
 
         #Loops through results to see if the detected object is one of the wanted items 
         for r in results[0].boxes:
             if model.names[r.cls.item()] in wanted_items:
                 print("Wanted item detected: ", model.names[r.cls.item()])
             
-            else:
-                print("Unable to detect a wanted item. ")
 
         annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects. 
 
