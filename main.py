@@ -1,6 +1,8 @@
 import cv2
-import threading
 from ultralytics import YOLO
+import threading
+from flask import Flask
+from flask_socketio import SocketIO
 
 def object_tracking(model, wanted_items, cap):
         while True:
@@ -35,6 +37,13 @@ model = YOLO("yolov8n.pt")
 #A list of all the items wanted to be detected
 wanted_items = ["person", "car", "truck", "dog"]
 
+#Setting up the flask app
+app = Flask(__name__)
+
+@app.route("/")
+def home_page():
+    return "<h1> Testing Lad </h1>"
+
 cap = cv2.VideoCapture(0) #Captures video at the webcam index 0
 
 #If the computer is unable to open the webcam 
@@ -50,9 +59,13 @@ try:
     for t in threads:
         t.start()
 
+    #Run the Flask app
+    app.run(debug=False, use_reloader=False)
+
     # Wait for all threads to finish
     for t in threads:
         t.join()
+    
 
 finally:
     #Ends the camera feed 
