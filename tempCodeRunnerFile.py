@@ -27,10 +27,7 @@ try:
         #Loops through results to see if the detected object is one of the wanted items 
         for r in results[0].boxes:
             if model.names[r.cls.item()] in wanted_items:
-                print("Wanted item detected: ", model.names[r.cls.item()])
-            
-            else:
-                print("Unable to detect a wanted item. ")
+                print("Wanted item detected")
 
         annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects. 
 
