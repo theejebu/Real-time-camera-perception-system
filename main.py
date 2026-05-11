@@ -33,6 +33,11 @@ def object_tracking(model, wanted_items, cap):
                 print("Exiting...")
                 break 
 
+def browser_transmission():
+    while True:
+        recieved_data = detection_queue.get()
+        socketio.emit("Detection", recieved_data)
+
 #Load Yolov8
 model = YOLO("yolov8n.pt")
 
@@ -66,7 +71,9 @@ if not cap.isOpened():
 try:
     #Start the object tracking loop in a background thread
     threads = []
-    threads.append(threading.Thread(target=object_tracking, args=(model, wanted_items, cap), daemon=True)) #daemon=True means that the thread dies when the program exits
+
+    threads.append(threading.Thread(target=object_tracking, args=(model, wanted_items, cap), daemon=True)) #Thread to track the objects
+    threads.append(threading.Thread(target=browser_transmission, daemon=True)) #Thread to send data to browser
     
     #Start each thread
     for t in threads:
