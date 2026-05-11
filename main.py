@@ -39,6 +39,8 @@ wanted_items = ["person", "car", "truck", "dog"]
 
 #Setting up the flask app
 app = Flask(__name__)
+#Link SocketIO to the flask app
+socketio = SocketIO(app)
 
 @app.route("/")
 def home_page():
@@ -60,7 +62,7 @@ try:
         t.start()
 
     #Run the Flask app
-    app.run(debug=False, use_reloader=False)
+    socketio.run(app, debug=False, use_reloader=False)
 
     # Wait for all threads to finish
     for t in threads:
