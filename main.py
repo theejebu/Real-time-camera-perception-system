@@ -3,6 +3,7 @@ from ultralytics import YOLO
 import threading
 from flask import Flask
 from flask_socketio import SocketIO
+import queue
 
 def object_tracking(model, wanted_items, cap):
         while True:
@@ -14,13 +15,12 @@ def object_tracking(model, wanted_items, cap):
                 break
 
             #The results of using the YOLO model to track objects in the frame 
-            results = model.track(frame, verbose=False) 
+            results = model.track(frame, verbose=False, classes=wanted_ids) 
 
             #Loops through results to see if the detected object is one of the wanted items 
             for r in results[0].boxes:
                 if model.names[r.cls.item()] in wanted_items:
                     print("Wanted item detected: ", model.names[r.cls.item()])
-                
 
             annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects. 
 
@@ -34,8 +34,14 @@ def object_tracking(model, wanted_items, cap):
 #Load Yolov8
 model = YOLO("yolov8n.pt")
 
-#A list of all the items wanted to be detected
+#A list of all the items  and ids wanted to be detected. The items will later be converted into ids. 
 wanted_items = ["person", "car", "truck", "dog"]
+wanted_ids = []
+
+#Convert the wanted items into ids 
+for id, name in model.names.items():
+    if name in wanted_items:
+        wanted_ids.append(id)
 
 #Setting up the flask app
 app = Flask(__name__)
