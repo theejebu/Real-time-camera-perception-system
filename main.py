@@ -21,8 +21,9 @@ def object_tracking(model, wanted_items, cap):
             for r in results[0].boxes:
                 if model.names[r.cls.item()] in wanted_items:
                     print("Wanted item detected: ", model.names[r.cls.item()])
-                    detection_data = {"class":model.names[r.cls.item()], "id":r.id.item(), "confidence":r.conf.item()} #Make a dictionary for the queue
-                    detection_queue.put(detection_data) #Add it into the Queue
+                    if r.id is not None:
+                        detection_data = {"class":model.names[r.cls.item()], "id":r.id.item(), "confidence":r.conf.item()} #Make a dictionary for the queue
+                        detection_queue.put(detection_data) #Add it into the Queue
 
             annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects
 
