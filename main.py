@@ -1,13 +1,15 @@
 import cv2
 from ultralytics import YOLO
 import threading
-from flask import Flask
+from flask import Flask, Response   
 from flask_socketio import SocketIO
 import queue
 import numpy as np
 
 def object_tracking(model, wanted_items, cap):
+        global current_frame
         while True:
+
             ret, frame = cap.read() #Captures the frames 
 
             #If a frame is not returned
@@ -28,32 +30,29 @@ def object_tracking(model, wanted_items, cap):
 
             annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects
 
-            cv2.imshow('Webcam Feed', annotated_frame) #Displays the webcam feed
-
-            #Ends the camera feed if 'q' is pressed
-            if cv2.waitKey(1) == ord('q'):
-                print("Exiting...")
-                break 
+            #Locks the frame so it can safely be written to
+            with lock:
+                current_frame = annotated_frame
+ 
 
 def generate_frames():
     while True:
-            ret, frame = cap.read() #Captures the frames 
+            if current_frame is not None:
 
-            #If a frame is not returned
-            if not ret:
-                print("Unable to recieve the frame")
-                break
+                #Lock so the current frame can safely be read from
+                with lock:
+                    frame = current_frame
 
-            successful_encoding, encoded_frame = cv2.imencode(".jpg", frame) #Encodes the frame into a jpg 
-            encoded_frame = encoded_frame.tobytes() #Convert the image into bytes
-            
-            #If the encoding doesn't work 
-            if not successful_encoding:
-                print("Unsucessful encoding ")
-                break
-            
-            #Yield the frame into the MJPEG format
-            yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + encoded_frame + b'\r\n\r\n')
+                successful_encoding, encoded_frame = cv2.imencode(".jpg", frame) #Encodes the frame into a jpg 
+                encoded_frame = encoded_frame.tobytes() #Convert the image into bytes
+                
+                #If the encoding doesn't work 
+                if not successful_encoding:
+                    print("Unsucessful encoding ")
+                    break
+                
+                #Yield the frame into the MJPEG format
+                yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + encoded_frame + b'\r\n\r\n')
 
 def browser_transmission():
     while True:
@@ -63,7 +62,7 @@ def browser_transmission():
 #Load Yolov8
 model = YOLO("yolov8n.pt")
 
-#A list of all the items  and ids wanted to be detected. The items will later be converted into idsz
+#A list of all the items  and ids wanted to be detected. The items will later be converted into ids
 wanted_items = ["person", "car", "truck", "dog"]
 wanted_ids = []
 
@@ -72,19 +71,30 @@ for id, name in model.names.items():
     if name in wanted_items:
         wanted_ids.append(id)
 
+#Lock for the threads so they don't read and write a variable at the same time
+lock = threading.Lock()
+
 #Make a queue
 detection_queue = queue.Queue()
 
 #Setting up the flask app
 app = Flask(__name__)
+
 #Link SocketIO to the flask app
 socketio = SocketIO(app)
 
+#Route for the home page
 @app.route("/")
 def home_page():
     return "<h1> Testing Lad </h1>"
 
+#Route for the video feed
+@app.route("/video_feed")
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 cap = cv2.VideoCapture(0) #Captures video at the webcam index 0
+current_frame = None #Declare a global variable for the current frame 
 
 #If the computer is unable to open the webcam 
 if not cap.isOpened(): 
