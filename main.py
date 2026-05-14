@@ -37,12 +37,12 @@ def object_tracking(model, wanted_items, cap):
 def browser_transmission():
     while True:
         recieved_data = detection_queue.get()
-        socketio.emit("Detection", recieved_data)
+        socketio.emit("Detection", recieved_data) #Send the data from the detection to the browser
 
 #Load Yolov8
 model = YOLO("yolov8n.pt")
 
-#A list of all the items  and ids wanted to be detected. The items will later be converted into ids.
+#A list of all the items  and ids wanted to be detected. The items will later be converted into idsz
 wanted_items = ["person", "car", "truck", "dog"]
 wanted_ids = []
 
