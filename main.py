@@ -1,7 +1,8 @@
+#Imports
 import cv2
 from ultralytics import YOLO
 import threading
-from flask import Flask, Response   
+from flask import Flask, Response, render_template 
 from flask_socketio import SocketIO
 import queue
 import numpy as np
@@ -32,8 +33,7 @@ def object_tracking(model, wanted_items, cap):
 
             #Locks the frame so it can safely be written to
             with lock:
-                current_frame = annotated_frame
- 
+                current_frame = annotated_frame 
 
 def generate_frames():
     while True:
@@ -86,7 +86,7 @@ socketio = SocketIO(app)
 #Route for the home page
 @app.route("/")
 def home_page():
-    return "<h1> Testing Lad </h1>"
+    return render_template('index.html')
 
 #Route for the video feed
 @app.route("/video_feed")
