@@ -4,6 +4,7 @@ import threading
 from flask import Flask
 from flask_socketio import SocketIO
 import queue
+import numpy as np
 
 def object_tracking(model, wanted_items, cap):
         while True:
@@ -33,6 +34,26 @@ def object_tracking(model, wanted_items, cap):
             if cv2.waitKey(1) == ord('q'):
                 print("Exiting...")
                 break 
+
+def generate_frames():
+    while True:
+            ret, frame = cap.read() #Captures the frames 
+
+            #If a frame is not returned
+            if not ret:
+                print("Unable to recieve the frame")
+                break
+
+            successful_encoding, encoded_frame = cv2.imencode(".jpg", frame) #Encodes the frame into a jpg 
+            encoded_frame = encoded_frame.tobytes() #Convert the image into bytes
+            
+            #If the encoding doesn't work 
+            if not successful_encoding:
+                print("Unsucessful encoding ")
+                break
+            
+            #Yield the frame into the MJPEG format
+            yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + encoded_frame + b'\r\n\r\n')
 
 def browser_transmission():
     while True:
