@@ -15,6 +15,7 @@
         <th>Object Name</th>
         <th>Time</th>
         <th>Confidence</th>
+        <th>ID</th>
     </tr>
 </table>
 <script>
@@ -22,7 +23,7 @@
     socket.on("Detection", function(data) {
         let table = document.getElementById("detection-table")
         let row = table.insertRow(1)
-        row.innerHTML = "<td>" + data.class + "</td>" + "<td>" + data.time + "</td>" + "<td>" + data.confidence + "</td>" 
+        row.innerHTML = "<td>" + data.class + "</td>" + "<td>" + data.time + "</td>" + "<td>" + data.confidence + "</td>" + "<td>" + data.id + "</td>"
     })
 </script>
 </body>

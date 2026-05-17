@@ -27,9 +27,9 @@ def object_tracking(model, wanted_items, cap):
                 if model.names[r.cls.item()] in wanted_items:
                     print("Wanted item detected: ", model.names[r.cls.item()])
                     if r.id is not None:
-                        curr_time = datetime.datetime.now().strftime("%c") #Get the current local data and time
+                        current_time = datetime.datetime.now().strftime("%c") #Get the current local data and time
                         
-                        detection_data = {"class":model.names[r.cls.item()], "time":curr_time, "confidence":round(r.conf.item(), 2)} #Make a dictionary for the queue
+                        detection_data = {"class":model.names[r.cls.item()], "time":current_time, "confidence":round(r.conf.item(), 2), "id":r.id.item()} #Make a dictionary for the queue
                         detection_queue.put(detection_data) #Add it into the Queue
 
             annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects
