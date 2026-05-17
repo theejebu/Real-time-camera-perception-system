@@ -6,6 +6,7 @@ from flask import Flask, Response, render_template
 from flask_socketio import SocketIO
 import queue
 import numpy as np
+import datetime
 
 def object_tracking(model, wanted_items, cap):
         global current_frame
@@ -26,7 +27,9 @@ def object_tracking(model, wanted_items, cap):
                 if model.names[r.cls.item()] in wanted_items:
                     print("Wanted item detected: ", model.names[r.cls.item()])
                     if r.id is not None:
-                        detection_data = {"class":model.names[r.cls.item()], "id":r.id.item(), "confidence":r.conf.item()} #Make a dictionary for the queue
+                        curr_time = datetime.datetime.now().strftime("%c") #Get the current local data and time
+                        
+                        detection_data = {"class":model.names[r.cls.item()], "time":curr_time, "confidence":r.conf.item()} #Make a dictionary for the queue
                         detection_queue.put(detection_data) #Add it into the Queue
 
             annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects
