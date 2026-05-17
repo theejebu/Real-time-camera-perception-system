@@ -20,7 +20,9 @@
 <script>
     const socket = io() 
     socket.on("Detection", function(data) {
-        console.log(data)
+        let table = document.getElementById("detection-table")
+        let row = table.insertRow(1)
+        row.innerHTML = "<td>" + data.class + "</td>" + "<td>" + data.time + "</td>" + "<td>" + data.confidence + "</td>" 
     })
 </script>
 </body>
