@@ -44,11 +44,11 @@ def object_tracking(model, wanted_items, cap):
                         detection_queue.put(detection_data) #Add the data to the queue
                         sent_ids.add(id) #Add the unique ID to the IDs that are already sent
 
-                annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects
+            annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects
 
-                #Locks the frame so it can safely be written to
-                with lock:
-                    current_frame = annotated_frame 
+            #Locks the frame so it can safely be written to
+            with lock:
+                current_frame = annotated_frame 
 
 def generate_frames():
     while True:
