@@ -22,30 +22,33 @@ def object_tracking(model, wanted_items, cap):
             #The results of using the YOLO model to track objects in the frame 
             results = model.track(frame, verbose=False, classes=wanted_ids, persist=True) 
 
-        if results[0].boxes.id is not None:
-            # Extract IDs and Classes
-            object_ids = results[0].boxes.id.int().cpu().tolist()
-            object_confidence = results[0].boxes.conf.cpu().tolist()
-            object_class = results[0].boxes.cls.int().cpu().tolist()
+            if results[0].boxes.id is not None:
+                # Extract IDs and Classes
+                object_ids = results[0].boxes.id.int().cpu().tolist()
+                object_confidence = results[0].boxes.conf.cpu().tolist()
+                object_class = results[0].boxes.cls.int().cpu().tolist()
 
-            for id, conf, cls in zip(object_ids, object_confidence, object_class):
-                # Only send if ID is new and in wanted_items
-                if id not in sent_ids:
-                    class_name = model.names[cls]
-                    current_time = datetime.datetime.now().strftime("%c")
-                    
-                    detection_data = {
-                        "class": class_name, 
-                        "time": current_time, 
-                        "confidence": round(conf, 2), 
-                        "id": id
-                    }
+                for id, conf, cls in zip(object_ids, object_confidence, object_class):
+                    # Only send if ID is new and in wanted_items
+                    if id not in sent_ids:
+                        class_name = model.names[cls]
+                        current_time = datetime.datetime.now().strftime("%c")
+                        
+                        detection_data = {
+                            "class": class_name, 
+                            "time": current_time, 
+                            "confidence": round(conf, 2), 
+                            "id": id
+                        }
 
-            annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects
+                        detection_queue.put(detection_data) #Add the data to the queue
+                        sent_ids.add(id) #Add the unique ID to the IDs that are already sent
 
-            #Locks the frame so it can safely be written to
-            with lock:
-                current_frame = annotated_frame 
+                annotated_frame = results[0].plot() #Gets the list the labels and draws bounding boxes on the objects
+
+                #Locks the frame so it can safely be written to
+                with lock:
+                    current_frame = annotated_frame 
 
 def generate_frames():
     while True:
